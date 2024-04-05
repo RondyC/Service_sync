@@ -1,5 +1,3 @@
-# cloud_storage.py
-
 import yadisk
 import os
 import logging
