@@ -11,8 +11,8 @@ load_dotenv()
 logging.basicConfig(filename=os.environ.get("LOG_PATH", "./sync.log"), level=logging.INFO, format='%(asctime)s - %(message)s')
 
 
-def sync_files(local_folder, backup_folder, token, sync_interval):
-    yandex_client = YandexDiskClient(token, backup_folder)
+def sync_files(local_folder, token, sync_interval):
+    yandex_client = YandexDiskClient(token)
     logging.info('Запускаем процесс синхронизации')
     try:
         local_files = {file for file in os.listdir(local_folder) if os.path.isfile(os.path.join(local_folder, file))}
@@ -22,10 +22,10 @@ def sync_files(local_folder, backup_folder, token, sync_interval):
         for file in local_files:
             if file not in remote_files:
                 logging.info(f'Загружается новый файл: {file}')
-                yandex_client.upload_file(os.path.join(local_folder, file), file)
+                yandex_client.upload_file(os.path.join(local_folder, file), file)  # Указываем только имя файла
             else:
                 logging.info(f'Обновление файла: {file}')
-                yandex_client.upload_file(os.path.join(local_folder, file), file)
+                yandex_client.upload_file(os.path.join(local_folder, file), file)  # Указываем только имя файла
 
         for file in remote_files:
             if file not in local_files:
@@ -39,12 +39,11 @@ def sync_files(local_folder, backup_folder, token, sync_interval):
 def main():
     config = read_config()
     local_folder = get_config_value(config, 'Settings', 'local_folder')
-    backup_folder = get_config_value(config, 'Settings', 'backup_folder')
     token = os.getenv('YANDEX_DISK_TOKEN')
     sync_interval = get_config_int_value(config, 'Settings', 'sync_interval')
 
     while True:
-        sync_files(local_folder, backup_folder, token, sync_interval)
+        sync_files(local_folder, token, sync_interval)
         time.sleep(sync_interval)
 
 
